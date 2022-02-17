@@ -58,21 +58,27 @@ class Player(object):
     def _update_param(self, step):
         batch = random.sample(self.memory, self.batch_size)
         states, actions, rewards, next_states, gammas = zip(*[(e[0], e[1], e[2], e[3], e[4]) for e in batch])
-        with tf.GradientTape() as tape:
-            rewards = np.array(rewards, dtype=np.float32)
-            actions = np.array(actions, dtype=np.int32)
-            gammas = np.array(gammas, dtype=np.float32)
-            q_next = self.target_model(tf.convert_to_tensor(np.array(next_states), dtype=tf.float32))
-            actions_next = tf.argmax(self.model(tf.convert_to_tensor(np.array(next_states), dtype=tf.float32)), axis=1)
-            td_target = gammas * tf.reduce_sum(tf.one_hot(actions_next, self.action_size) * q_next) + rewards
 
+        with tf.GradientTape() as tape:
+            rewards = tf.convert_to_tensor(np.array(rewards), dtype=tf.float32)
+            actions = tf.convert_to_tensor(np.array(actions), dtype=tf.int32)
+            gammas = tf.convert_to_tensor(np.array(gammas), dtype=tf.float32)
+
+            q_target = self.target_model(tf.convert_to_tensor(np.array(next_states), dtype=tf.float32))
+            q_next_dqn = self.model(tf.convert_to_tensor(np.array(next_states), dtype=tf.float32))
+            q_next_dqn = tf.stop_gradient(q_next_dqn)
+            next_action = tf.argmax(q_next_dqn, axis=1)
+            td_target = tf.reduce_sum(tf.one_hot(next_action, self.action_size) * q_target, axis=1)
+            target_value = gammas * td_target + rewards
+            print(target_value)
             q = self.model(tf.convert_to_tensor(np.array(states), dtype=tf.float32))
             q_value = tf.reduce_sum(tf.one_hot(actions, self.action_size) * q, axis=1)
-            td_error = q_value - td_target
-            loss = tf.reduce_mean(tf.square(td_error)*0.5)
 
-            gradients = tape.gradient(loss, self.model.trainable_variables)
-            self.opt.apply_gradients(zip(gradients, self.model.trainable_variables))
+            loss = tf.reduce_mean(tf.square(q_value - target_value) * 0.5)
+
+
+        dqn_grads = tape.gradient(loss, self.model.trainable_variables)
+        self.opt.apply_gradients(zip(dqn_grads, self.model.trainable_variables))
 
         if step % 20 == 0:
             self.target_model.set_weights(self.model.get_weights())
