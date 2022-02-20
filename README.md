@@ -15,3 +15,12 @@ Tutorials about reinforcement learning and deep learning.
 - [ ] A3C
 - [ ] PPO
 - [ ] SAC
+
+
+## Advance Implementation
+Using ZMQ to run multi workers.
+
+- [ ] DQN
+- [ ] A3C
+- [ ] PPO
+- [ ] SAC
