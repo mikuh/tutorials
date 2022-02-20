@@ -10,7 +10,7 @@ Tutorials about reinforcement learning and deep learning.
 - [x] [Double DQN](./DRL/Base/double_dqn.py)
 - [x] [Dueing DQN](./DRL/Base/dueing_dqn.py)
 - [x] [Dueing DQN with multi-step and prioritized experience replay](./DRL/Base/multi_step_dqn_with_prioritized.py)
-- [ ] Policy Gradient
+- [x] [REINFORCE with Baseline](./DRL/Base/reinforce_with_baseline.py)
 - [ ] A2C
 - [ ] A3C
 - [ ] PPO
