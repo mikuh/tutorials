@@ -1,11 +1,8 @@
 import tensorflow as tf
 import numpy as np
 from types import SimpleNamespace
-from collections import deque
-import random
 import gym
 import tqdm
-import time
 
 
 class Reinforce(tf.keras.Model):
@@ -105,13 +102,12 @@ class Player(object):
                 states = tf.convert_to_tensor(states, dtype=tf.float32)
                 gs = tf.convert_to_tensor(gs, dtype=tf.float32)
                 actions = tf.convert_to_tensor(actions, dtype=tf.int32)
-                states = tf.convert_to_tensor(states, dtype=tf.float32)
                 policy, value = self.model(states)
                 pi = tf.reduce_sum(tf.one_hot(actions, self.action_size) * policy, axis=1)
                 delta_t = gs - value
-                loss = -delta_t * tf.math.log(pi)
+                v = -delta_t * tf.math.log(pi)
 
-            policy_grads = tape.gradient(loss, self.model.trainable_variables)
+            policy_grads = tape.gradient(v, self.model.trainable_variables)
             self.opt.apply_gradients(zip(policy_grads, self.model.trainable_variables))
 
         self.memory.clear()
@@ -146,7 +142,7 @@ if __name__ == '__main__':
 
     config = {
         "env_name": "Breakout-v0",  # CartPole-v1  SpaceInvaders-v0
-        "lr": 0.00001,
+        "lr": 0.0003,
         "gamma": 0.99,
         "batch_size": 128,
     }
