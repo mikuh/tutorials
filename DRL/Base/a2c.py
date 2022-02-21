@@ -1,3 +1,5 @@
+import time
+
 import tensorflow as tf
 import numpy as np
 from types import SimpleNamespace
@@ -70,8 +72,8 @@ class Memory(object):
 class Player(object):
 
     def __init__(self, config: SimpleNamespace):
-        self.env = gym.make(config.env_name, render_mode='human')
-
+        # self.env = gym.make(config.env_name, render_mode='human')
+        self.env = gym.make(config.env_name)
         self.lr = config.lr
         self.gamma = config.gamma
         self.batch_size = config.batch_size
@@ -113,9 +115,9 @@ class Player(object):
 
             value_loss = tf.reduce_mean(tf.square(adventage)*0.5)
             policy_loss = - tf.stop_gradient(adventage) * tf.math.log(pi+1e-8)
-            policy_entropy = tf.reduce_sum(- policy * tf.math.log(policy + 1e-8))
+            policy_entropy = - tf.reduce_mean(- policy * tf.math.log(policy + 1e-8)) * 0.2
 
-            loss = value_loss + policy_loss + policy_entropy*0.01
+            loss = value_loss + policy_loss + policy_entropy
 
         policy_grads = tape.gradient(loss, self.model.trainable_variables)
         self.opt.apply_gradients(zip(policy_grads, self.model.trainable_variables))
@@ -144,9 +146,9 @@ class Player(object):
                 if done:
                     episode += 1
                     print(f"{episode} episode, score: {score}")
-                    state = self.env.reset()
                     with self.summary_writer.as_default():
                         tf.summary.scalar('score', score, step=episode)
+                    state = self.env.reset()
                     score = 0
 
             self._update_param()
@@ -155,7 +157,7 @@ if __name__ == '__main__':
 
     config = {
         "env_name": "Breakout-v0",  # CartPole-v1  SpaceInvaders-v0
-        "lr": 0.00001,
+        "lr": 0.0003,
         "gamma": 0.99,
         "batch_size": 128,
         "rollout": 128,
