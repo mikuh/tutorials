@@ -1,10 +1,7 @@
-import time
-
 import tensorflow as tf
 import numpy as np
 from types import SimpleNamespace
 import gym
-import tqdm
 
 class A2C(tf.keras.Model):
 
