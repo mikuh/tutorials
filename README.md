@@ -12,7 +12,7 @@ Tutorials about reinforcement learning and deep learning.
 - [x] [Dueing DQN with multi-step and prioritized experience replay](./DRL/Base/multi_step_dqn_with_prioritized.py)
 - [x] [REINFORCE with Baseline](./DRL/Base/reinforce_with_baseline.py)
 - [x] [A2C](./DRL/Base/a2c.py)
-- [ ] PPO
+- [x] [PPO](./DRL/Base/ppo.py)
 - [ ] SAC
 
 
