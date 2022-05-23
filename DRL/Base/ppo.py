@@ -131,7 +131,7 @@ class Player(object):
                 train_action = tf.convert_to_tensor(batch_action, dtype=tf.int32)
                 train_old_policy = tf.convert_to_tensor(batch_old_policy, dtype=tf.float32)
 
-                entropy = tf.reduce_mean(-train_policy * tf.math.log(train_policy + 1e-8)) * 0.1
+                entropy_loss = tf.reduce_mean(train_policy * tf.math.log(train_policy + 1e-8)) * 0.01
                 onehot_action = tf.one_hot(train_action, self.action_size)
                 selected_prob = tf.reduce_sum(train_policy * onehot_action, axis=1)
                 selected_old_prob = tf.reduce_sum(train_old_policy * onehot_action, axis=1)
@@ -143,11 +143,11 @@ class Player(object):
                 clipped_ratio = tf.clip_by_value(ratio, clip_value_min=1 - self.ppo_eps,
                                                  clip_value_max=1 + self.ppo_eps)
                 minimum = tf.minimum(tf.multiply(train_adv, clipped_ratio), tf.multiply(train_adv, ratio))
-                pi_loss = -tf.reduce_mean(minimum) + entropy
+                pi_loss = -tf.reduce_mean(minimum)
 
                 value_loss = tf.reduce_mean(tf.square(train_target - train_current_value))
 
-                total_loss = pi_loss + value_loss
+                total_loss = pi_loss + value_loss + entropy_loss
 
             grads = tape.gradient(total_loss, self.model.trainable_variables)
             self.opt.apply_gradients(zip(grads, self.model.trainable_variables))
